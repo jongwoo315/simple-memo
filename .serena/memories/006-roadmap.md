@@ -32,6 +32,11 @@
 - Drag reorder disabled due to conflict with long press copy
 - May revisit with drag handle icon or alternative UX
 
+### UI Polish (Phase 1.5)
+- [ ] Custom popups to match app appearance (copy snackbar, delete confirmation)
+- [ ] Bottom button bar color adjustment for dark theme
+- [ ] Filter button UX improvement (clearer indication for bold filter)
+
 ### Monetization
 - [ ] Google AdMob integration for ad revenue (BM)
 
