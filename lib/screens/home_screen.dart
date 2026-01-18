@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../models/memo.dart';
+import '../providers/theme_provider.dart';
 import '../services/storage_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -240,19 +242,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 누리끼리 (cream/yellowish) background color
-  static const Color _backgroundColor = Color(0xFFFAF6E9);
-
   // Maximum height ratio for memo display area
   static const double _maxMemoHeightRatio = 0.8;
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final backgroundColor = themeProvider.backgroundColor(context);
+    final pipeColor = themeProvider.pipeColor(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final maxMemoHeight = screenHeight * _maxMemoHeightRatio;
 
     return Scaffold(
-      backgroundColor: _backgroundColor,
+      backgroundColor: backgroundColor,
       body: GestureDetector(
         onTap: _isEditing ? _cancelEditing : null,
         behavior: HitTestBehavior.translucent,
@@ -277,6 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 currentEditingIsBold: _editingMemoId != null
                     ? (_memos.where((m) => m.id == _editingMemoId).firstOrNull?.isBold ?? false)
                     : false,
+                pipeColor: pipeColor,
               ),
             ),
           ),
@@ -324,6 +327,7 @@ class MemoDisplay extends StatelessWidget {
   final Function(String) onSubmitted;
   final Function(KeyEvent) onKeyEvent;
   final bool currentEditingIsBold;
+  final Color pipeColor;
 
   const MemoDisplay({
     super.key,
@@ -341,6 +345,7 @@ class MemoDisplay extends StatelessWidget {
     required this.onSubmitted,
     required this.onKeyEvent,
     this.currentEditingIsBold = false,
+    required this.pipeColor,
   });
 
   @override
@@ -468,7 +473,6 @@ class MemoDisplay extends StatelessWidget {
 
   List<Widget> _buildRowWithPipes(BuildContext context, List<_ItemWithWidth> rowItems) {
     final List<Widget> children = [];
-    const pipeColor = Color(0xFFCCCCCC);
 
     for (int i = 0; i < rowItems.length; i++) {
       final itemWithWidth = rowItems[i];
@@ -531,8 +535,8 @@ class MemoDisplay extends StatelessWidget {
       // Add pipe between items
       if (i < rowItems.length - 1) {
         children.add(
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
               '|',
               style: TextStyle(
