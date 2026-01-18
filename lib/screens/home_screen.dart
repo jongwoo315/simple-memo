@@ -263,8 +263,23 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: maxMemoHeight),
-            child: SingleChildScrollView(
-              child: MemoDisplay(
+            child: ShaderMask(
+              shaderCallback: (Rect bounds) {
+                return const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black,
+                    Colors.black,
+                    Colors.transparent,
+                  ],
+                  stops: [0.0, 0.02, 0.98, 1.0],
+                ).createShader(bounds);
+              },
+              blendMode: BlendMode.dstIn,
+              child: SingleChildScrollView(
+                child: MemoDisplay(
                 memos: _memos,
                 onDelete: _deleteMemo,
                 onCopy: _copyMemo,
@@ -283,6 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : false,
                 pipeColor: pipeColor,
                 isBoldFilterActive: _isBoldFilterActive,
+              ),
               ),
             ),
           ),
