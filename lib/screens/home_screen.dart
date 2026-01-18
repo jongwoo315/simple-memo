@@ -282,6 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? (_memos.where((m) => m.id == _editingMemoId).firstOrNull?.isBold ?? false)
                     : false,
                 pipeColor: pipeColor,
+                isBoldFilterActive: _isBoldFilterActive,
               ),
             ),
           ),
@@ -385,6 +386,7 @@ class MemoDisplay extends StatelessWidget {
   final Function(KeyEvent) onKeyEvent;
   final bool currentEditingIsBold;
   final Color pipeColor;
+  final bool isBoldFilterActive;
 
   const MemoDisplay({
     super.key,
@@ -403,6 +405,7 @@ class MemoDisplay extends StatelessWidget {
     required this.onKeyEvent,
     this.currentEditingIsBold = false,
     required this.pipeColor,
+    this.isBoldFilterActive = false,
   });
 
   @override
@@ -585,6 +588,7 @@ class MemoDisplay extends StatelessWidget {
             onEdit: onEdit,
             onToggleBold: onToggleBold,
             onReorder: onReorder,
+            isBoldFilterActive: isBoldFilterActive,
           ),
         );
       }
@@ -619,6 +623,7 @@ class _SwipeableMemo extends StatefulWidget {
   final Function(String) onEdit;
   final Function(String) onToggleBold;
   final Function(int, int) onReorder;
+  final bool isBoldFilterActive;
 
   const _SwipeableMemo({
     super.key,
@@ -630,6 +635,7 @@ class _SwipeableMemo extends StatefulWidget {
     required this.onEdit,
     required this.onToggleBold,
     required this.onReorder,
+    this.isBoldFilterActive = false,
   });
 
   @override
@@ -662,7 +668,14 @@ class _SwipeableMemoState extends State<_SwipeableMemo> {
   @override
   Widget build(BuildContext context) {
     // Calculate opacity based on swipe distance
-    final opacity = (1.0 - (_swipeOffset.abs() / _deleteThreshold * 0.7)).clamp(0.3, 1.0);
+    final swipeOpacity = (1.0 - (_swipeOffset.abs() / _deleteThreshold * 0.7)).clamp(0.3, 1.0);
+
+    // Bold filter effect: dim and shrink non-bold memos when filter is active
+    final isFiltered = widget.isBoldFilterActive && !widget.memo.isBold;
+    final filterOpacity = isFiltered ? 0.3 : 1.0;
+    final fontSize = isFiltered ? 12.0 : 16.0;
+
+    final effectiveOpacity = swipeOpacity * filterOpacity;
 
     return GestureDetector(
       onTap: () => widget.onEdit(widget.memo.id),
@@ -673,12 +686,12 @@ class _SwipeableMemoState extends State<_SwipeableMemo> {
       child: Transform.translate(
         offset: Offset(_swipeOffset, 0),
         child: Opacity(
-          opacity: opacity,
+          opacity: effectiveOpacity,
           child: Text(
             widget.memo.title,
             style: TextStyle(
               color: Color(widget.memo.colorValue),
-              fontSize: 16,
+              fontSize: fontSize,
               fontWeight: widget.memo.isBold ? FontWeight.bold : FontWeight.normal,
             ),
           ),
