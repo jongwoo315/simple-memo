@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final StorageService _storageService = StorageService();
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   final Uuid _uuid = const Uuid();
   final Random _random = Random();
 
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentColorValue = 0;
   String? _editingMemoId; // null = new memo, non-null = editing existing
   bool _isBoldFilterActive = false;
+  bool _hasShownScrollHint = false;
 
   // Muted/dusty tone colors (deeper for better readability)
   static const List<Color> _colors = [
@@ -68,6 +70,32 @@ class _HomeScreenState extends State<HomeScreen> {
     if (needsSave) {
       await _storageService.saveMemos(_memos);
     }
+
+    // Show scroll hint after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showScrollHint();
+    });
+  }
+
+  void _showScrollHint() {
+    if (_hasShownScrollHint) return;
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.maxScrollExtent <= 0) return;
+
+    _hasShownScrollHint = true;
+
+    // Bounce down then back
+    _scrollController.animateTo(
+      20,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    ).then((_) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeIn,
+      );
+    });
   }
 
   // Max text width in pixels (roughly 80% of typical phone width)
@@ -279,6 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               blendMode: BlendMode.dstIn,
               child: SingleChildScrollView(
+                controller: _scrollController,
                 child: MemoDisplay(
                 memos: _memos,
                 onDelete: _deleteMemo,
@@ -382,6 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _controller.removeListener(_onTextChanged);
     _controller.dispose();
     _focusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 }
