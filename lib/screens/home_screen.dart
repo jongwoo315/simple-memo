@@ -290,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: _isEditing
           ? null
           : Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
+              padding: const EdgeInsets.only(bottom: 70.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

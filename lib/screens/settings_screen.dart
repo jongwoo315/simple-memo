@@ -11,87 +11,180 @@ class SettingsScreen extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final backgroundColor = themeProvider.backgroundColor(context);
     final isDark = themeProvider.isDark(context);
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = isDark ? Colors.white70 : Colors.black54;
+    final pipeColor = themeProvider.pipeColor(context);
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: backgroundColor,
-        foregroundColor: textColor,
-        elevation: 0,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Back button row
+              _buildSettingRow(
+                context: context,
+                children: [
+                  _buildTappableText(
+                    text: '← back',
+                    color: textColor,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                ],
+                pipeColor: pipeColor,
+              ),
+              const SizedBox(height: 24),
+
+              // Theme row
+              _buildSettingRow(
+                context: context,
+                children: [
+                  Text('theme', style: TextStyle(color: textColor, fontSize: 16)),
+                  _buildThemeOption(
+                    text: 'system',
+                    isSelected: themeProvider.themeMode == AppThemeMode.system,
+                    color: textColor,
+                    onTap: () => themeProvider.setThemeMode(AppThemeMode.system),
+                  ),
+                  _buildThemeOption(
+                    text: 'light',
+                    isSelected: themeProvider.themeMode == AppThemeMode.light,
+                    color: textColor,
+                    onTap: () => themeProvider.setThemeMode(AppThemeMode.light),
+                  ),
+                  _buildThemeOption(
+                    text: 'dark',
+                    isSelected: themeProvider.themeMode == AppThemeMode.dark,
+                    color: textColor,
+                    onTap: () => themeProvider.setThemeMode(AppThemeMode.dark),
+                  ),
+                ],
+                pipeColor: pipeColor,
+              ),
+              const SizedBox(height: 16),
+
+              // Sync row (placeholder)
+              _buildSettingRow(
+                context: context,
+                children: [
+                  _buildTappableText(
+                    text: 'sync',
+                    color: textColor,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Coming soon!'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
+                  Text('sign in to sync',
+                    style: TextStyle(
+                      color: textColor.withValues(alpha: 0.5),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+                pipeColor: pipeColor,
+              ),
+              const SizedBox(height: 32),
+
+              // Clear all memos
+              _buildSettingRow(
+                context: context,
+                children: [
+                  _buildTappableText(
+                    text: '메모 모두 지우기',
+                    color: Colors.red.withValues(alpha: 0.7),
+                    onTap: () => _clearAllMemos(context),
+                  ),
+                ],
+                pipeColor: pipeColor,
+              ),
+            ],
+          ),
+        ),
       ),
-      body: ListView(
-        children: [
-          // Theme Section
-          ListTile(
-            title: Text('Theme', style: TextStyle(color: textColor)),
-            trailing: DropdownButton<AppThemeMode>(
-              value: themeProvider.themeMode,
-              dropdownColor: backgroundColor,
-              onChanged: (mode) {
-                if (mode != null) {
-                  themeProvider.setThemeMode(mode);
-                }
-              },
-              items: [
-                DropdownMenuItem(
-                  value: AppThemeMode.system,
-                  child: Text('System', style: TextStyle(color: textColor)),
-                ),
-                DropdownMenuItem(
-                  value: AppThemeMode.light,
-                  child: Text('Light', style: TextStyle(color: textColor)),
-                ),
-                DropdownMenuItem(
-                  value: AppThemeMode.dark,
-                  child: Text('Dark', style: TextStyle(color: textColor)),
-                ),
-              ],
-            ),
-          ),
-          const Divider(),
+    );
+  }
 
-          // Sync Section (placeholder for Phase 2)
-          ListTile(
-            title: Text('Sync', style: TextStyle(color: textColor)),
-            subtitle: Text('Sign in to sync', style: TextStyle(color: textColor.withValues(alpha: 0.6))),
-            trailing: Icon(Icons.chevron_right, color: textColor),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
-              );
-            },
+  Widget _buildSettingRow({
+    required BuildContext context,
+    required List<Widget> children,
+    required Color pipeColor,
+  }) {
+    final List<Widget> rowChildren = [];
+    for (int i = 0; i < children.length; i++) {
+      rowChildren.add(children[i]);
+      if (i < children.length - 1) {
+        rowChildren.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text('|', style: TextStyle(color: pipeColor, fontSize: 16)),
           ),
-          const Divider(),
+        );
+      }
+    }
 
-          // Danger Zone
-          const SizedBox(height: 32),
-          ListTile(
-            title: const Text(
-              '메모 모두 지우기',
-              style: TextStyle(color: Colors.red),
-            ),
-            onTap: () => _clearAllMemos(context),
-          ),
-        ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: rowChildren,
+    );
+  }
+
+  Widget _buildTappableText({
+    required String text,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: TextStyle(color: color, fontSize: 16),
+      ),
+    );
+  }
+
+  Widget _buildThemeOption({
+    required String text,
+    required bool isSelected,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 16,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
       ),
     );
   }
 
   Future<void> _clearAllMemos(BuildContext context) async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final backgroundColor = themeProvider.backgroundColor(context);
+    final isDark = themeProvider.isDark(context);
+    final textColor = isDark ? Colors.white70 : Colors.black87;
+
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('메모 모두 지우기'),
-        content: const Text('정말로 모든 메모를 삭제하시겠습니까?'),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: backgroundColor,
+        title: Text('메모 모두 지우기', style: TextStyle(color: textColor)),
+        content: Text('정말로 모든 메모를 삭제하시겠습니까?', style: TextStyle(color: textColor)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('취소'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('취소', style: TextStyle(color: textColor)),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('삭제', style: TextStyle(color: Colors.red)),
           ),
         ],
@@ -102,7 +195,7 @@ class SettingsScreen extends StatelessWidget {
       final storageService = StorageService();
       await storageService.saveMemos([]);
       if (context.mounted) {
-        Navigator.of(context).pop(true); // Return true to indicate memos cleared
+        Navigator.of(context).pop(true);
       }
     }
   }
