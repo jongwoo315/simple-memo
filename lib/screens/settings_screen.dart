@@ -39,7 +39,7 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingRow(
                 context: context,
                 children: [
-                  Text('theme', style: TextStyle(color: textColor, fontSize: 16)),
+                  Text('theme:', style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: 14)),
                   _buildThemeOption(
                     text: 'system',
                     isSelected: themeProvider.themeMode == AppThemeMode.system,
