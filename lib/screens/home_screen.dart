@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isEditing = true;
       _editingMemoId = null; // New memo
-      _currentColorValue = _colors[_random.nextInt(_colors.length)].value;
+      _currentColorValue = _colors[_random.nextInt(_colors.length)].toARGB32();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
