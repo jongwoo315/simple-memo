@@ -46,20 +46,65 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadMemos() async {
     final memos = await _storageService.loadMemos();
+
+    // Migrate old memos that exceed max width
+    bool needsSave = false;
+    for (int i = 0; i < memos.length; i++) {
+      final trimmed = _trimToMaxWidth(memos[i].title, isBold: memos[i].isBold);
+      if (trimmed != memos[i].title) {
+        memos[i] = memos[i].copyWith(title: trimmed);
+        needsSave = true;
+      }
+    }
+
     setState(() {
       _memos = memos;
     });
+
+    if (needsSave) {
+      await _storageService.saveMemos(_memos);
+    }
   }
 
-  static const int _maxLength = 30;
+  // Max text width in pixels (roughly 80% of typical phone width)
+  static const double _maxTextWidth = 300.0;
+  static const TextStyle _memoTextStyle = TextStyle(fontSize: 16);
+
+  static double _measureTextWidth(String text, {bool isBold = false}) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: _memoTextStyle.copyWith(
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    return textPainter.width;
+  }
+
+  static String _trimToMaxWidth(String text, {bool isBold = false}) {
+    if (_measureTextWidth(text, isBold: isBold) <= _maxTextWidth) {
+      return text;
+    }
+    // Binary search for the right length
+    int low = 0;
+    int high = text.length;
+    while (low < high) {
+      final mid = (low + high + 1) ~/ 2;
+      if (_measureTextWidth(text.substring(0, mid), isBold: isBold) <= _maxTextWidth) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return text.substring(0, low);
+  }
 
   Future<void> _addMemo(String title) async {
     if (title.trim().isEmpty) return;
 
-    String trimmedTitle = title.trim();
-    if (trimmedTitle.length > _maxLength) {
-      trimmedTitle = trimmedTitle.substring(0, _maxLength);
-    }
+    final trimmedTitle = _trimToMaxWidth(title.trim());
 
     final memo = Memo(
       id: _uuid.v4(),
@@ -81,10 +126,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    String trimmedTitle = title.trim();
-    if (trimmedTitle.length > _maxLength) {
-      trimmedTitle = trimmedTitle.substring(0, _maxLength);
-    }
+    final memo = _memos.firstWhere((m) => m.id == id);
+    final trimmedTitle = _trimToMaxWidth(title.trim(), isBold: memo.isBold);
 
     setState(() {
       final index = _memos.indexWhere((m) => m.id == id);
@@ -441,10 +484,11 @@ class MemoDisplay extends StatelessWidget {
               child: TextField(
                 controller: controller,
                 focusNode: focusNode,
-                maxLength: _HomeScreenState._maxLength,
-                maxLengthEnforcement: MaxLengthEnforcement.enforced,
                 inputFormatters: [
-                  LengthLimitingTextInputFormatter(_HomeScreenState._maxLength),
+                  _PixelWidthLimitingFormatter(
+                    maxWidth: _HomeScreenState._maxTextWidth,
+                    isBold: currentEditingIsBold,
+                  ),
                 ],
                 autofocus: true,
                 style: TextStyle(
@@ -621,3 +665,39 @@ class _ItemWithWidth {
 //   final int index;
 //   _DragData(this.memo, this.index);
 // }
+
+class _PixelWidthLimitingFormatter extends TextInputFormatter {
+  final double maxWidth;
+  final bool isBold;
+
+  _PixelWidthLimitingFormatter({
+    required this.maxWidth,
+    this.isBold = false,
+  });
+
+  double _measureWidth(String text) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    return textPainter.width;
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (_measureWidth(newValue.text) <= maxWidth) {
+      return newValue;
+    }
+    // Reject the new input, keep old value
+    return oldValue;
+  }
+}

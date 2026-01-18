@@ -1,7 +1,7 @@
 # Simple Memo - Feature Roadmap
 
 ## Bug Fixes
-- [ ] Fix `RenderFlex overflowed by X pixels on the right` - long memos exceeding screen width
+- [x] Fix `RenderFlex overflowed by X pixels on the right` - switched to pixel-based text width limit (2026-01-18)
 - [x] Fix memo display covering entire screen - added 80% max height constraint with scrolling (2026-01-18)
 - [x] Fix input box color changing on save - now uses color selected at edit start (2026-01-18)
 - [x] Fix swipe delete leaving empty area + pipe - added ValueKey for proper widget rebuild (2026-01-18)
@@ -38,7 +38,7 @@
 - Add memo with + button
 - Delete memo via swipe (left or right)
 - Auto-color assignment (5 muted/dusty tones)
-- 30 character limit per memo
+- Pixel-based width limit (300px max) - adapts to character width (Korean ~18, English ~35)
 - Persistent storage via SharedPreferences
 
 ### UI/UX
@@ -76,3 +76,5 @@
 - `_DisplayItem` - Union type for memo or input field in flow layout
 - Custom swipe detection (GestureDetector) instead of Dismissible
 - ValueKey on memo widgets for proper reconciliation
+- `_PixelWidthLimitingFormatter` - Custom TextInputFormatter for pixel-based input limiting
+- `_measureTextWidth()` / `_trimToMaxWidth()` - TextPainter-based width measurement
