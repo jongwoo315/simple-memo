@@ -36,40 +36,44 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Theme row
-              _buildSettingRow(
-                context: context,
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('theme:', style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: 14)),
-                  _buildThemeOption(
-                    text: 'system',
-                    isSelected: themeProvider.themeMode == AppThemeMode.system,
-                    color: textColor,
-                    onTap: () => themeProvider.setThemeMode(AppThemeMode.system),
-                  ),
-                  _buildThemeOption(
-                    text: 'light',
-                    isSelected: themeProvider.themeMode == AppThemeMode.light,
-                    color: textColor,
-                    onTap: () => themeProvider.setThemeMode(AppThemeMode.light),
-                  ),
-                  _buildThemeOption(
-                    text: 'dark',
-                    isSelected: themeProvider.themeMode == AppThemeMode.dark,
-                    color: textColor,
-                    onTap: () => themeProvider.setThemeMode(AppThemeMode.dark),
+                  Text('THEME', style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.w300, letterSpacing: 2)),
+                  const SizedBox(width: 16),
+                  _buildSettingRow(
+                    context: context,
+                    children: [
+                      _buildThemeOption(
+                        text: 'system',
+                        isSelected: themeProvider.themeMode == AppThemeMode.system,
+                        color: textColor,
+                        onTap: () => themeProvider.setThemeMode(AppThemeMode.system),
+                      ),
+                      _buildThemeOption(
+                        text: 'light',
+                        isSelected: themeProvider.themeMode == AppThemeMode.light,
+                        color: textColor,
+                        onTap: () => themeProvider.setThemeMode(AppThemeMode.light),
+                      ),
+                      _buildThemeOption(
+                        text: 'dark',
+                        isSelected: themeProvider.themeMode == AppThemeMode.dark,
+                        color: textColor,
+                        onTap: () => themeProvider.setThemeMode(AppThemeMode.dark),
+                      ),
+                    ],
+                    pipeColor: pipeColor,
                   ),
                 ],
-                pipeColor: pipeColor,
               ),
               const SizedBox(height: 16),
 
               // Sync row (placeholder)
-              _buildSettingRow(
-                context: context,
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildTappableText(
-                    text: 'sync',
-                    color: textColor,
+                  GestureDetector(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -78,7 +82,9 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       );
                     },
+                    child: Text('SYNC', style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.w300, letterSpacing: 2)),
                   ),
+                  const SizedBox(width: 16),
                   Text('sign in to sync',
                     style: TextStyle(
                       color: textColor.withValues(alpha: 0.5),
@@ -86,7 +92,6 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                pipeColor: pipeColor,
               ),
               const SizedBox(height: 32),
 
