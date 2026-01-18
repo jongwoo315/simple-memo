@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../models/memo.dart';
 import '../providers/theme_provider.dart';
 import '../services/storage_service.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isEditing = false;
   int _currentColorValue = 0;
   String? _editingMemoId; // null = new memo, non-null = editing existing
+  bool _isBoldFilterActive = false;
 
   // Muted/dusty tone colors (deeper for better readability)
   static const List<Color> _colors = [
@@ -285,22 +287,77 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: _isEditing
+      bottomNavigationBar: _isEditing
           ? null
-          : SizedBox(
-              width: 36,
-              height: 24,
-              child: FloatingActionButton(
-                onPressed: _startEditing,
-                backgroundColor: Colors.grey[400],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: const Icon(Icons.add, size: 14),
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Add button
+                  _buildBottomButton(
+                    icon: Icons.add,
+                    onPressed: _startEditing,
+                    isActive: false,
+                    themeProvider: themeProvider,
+                  ),
+                  const SizedBox(width: 8),
+                  // Filter button
+                  _buildBottomButton(
+                    icon: Icons.filter_list,
+                    onPressed: _toggleBoldFilter,
+                    isActive: _isBoldFilterActive,
+                    themeProvider: themeProvider,
+                  ),
+                  const SizedBox(width: 8),
+                  // Settings button
+                  _buildBottomButton(
+                    icon: Icons.settings,
+                    onPressed: () => _openSettings(context),
+                    isActive: false,
+                    themeProvider: themeProvider,
+                  ),
+                ],
               ),
             ),
     );
+  }
+
+  Widget _buildBottomButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isActive,
+    required ThemeProvider themeProvider,
+  }) {
+    return SizedBox(
+      width: 36,
+      height: 24,
+      child: Material(
+        color: isActive ? Colors.grey[600] : Colors.grey[400],
+        borderRadius: BorderRadius.circular(3),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(3),
+          child: Icon(icon, size: 14, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  void _toggleBoldFilter() {
+    setState(() {
+      _isBoldFilterActive = !_isBoldFilterActive;
+    });
+  }
+
+  Future<void> _openSettings(BuildContext context) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
+    if (result == true) {
+      // Memos were cleared, reload
+      await _loadMemos();
+    }
   }
 
   @override
