@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Colors.black,
                     Colors.transparent,
                   ],
-                  stops: [0.0, 0.02, 0.98, 1.0],
+                  stops: [0.0, 0.08, 0.92, 1.0],
                 ).createShader(bounds);
               },
               blendMode: BlendMode.dstIn,
@@ -718,8 +718,8 @@ class _SwipeableMemoState extends State<_SwipeableMemo> {
 
     // Bold filter effect: dim and shrink non-bold memos when filter is active
     final isFiltered = widget.isBoldFilterActive && !widget.memo.isBold;
-    final filterOpacity = isFiltered ? 0.3 : 1.0;
-    final fontSize = isFiltered ? 12.0 : 16.0;
+    final filterOpacity = isFiltered ? 0.5 : 1.0;
+    final fontSize = isFiltered ? 14.0 : 16.0;
 
     final effectiveOpacity = swipeOpacity * filterOpacity;
 
